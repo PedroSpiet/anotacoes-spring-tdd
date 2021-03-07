@@ -1,0 +1,55 @@
+Para testar um resource 
+é necessário adicionar as seguintes annotations encima da nossa classe.
+
+#no Junit4 é @RunWith(SpringRunner.class)
+1 -> @ExtendWith(SpringExtension.class) -> ExtendWith é uma anoteção repetível usada para registrar extensões do springboot para a classe de teste anotada ou método de teste.
+
+2 -> @WebMvcTest -> Annotation que nos dará os recursos para fazer os testes das requisições
+
+3 -> @ActiveProfiles("test") -> Aqui definiremos nosso perfil de teste
+
+4 -> @AutoConfigureMockMvc -> Annotation que configurará automaticamente nossa classe mocada do WebMvcTest
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Primeiro eu defino a BASE_URL do resource que vou testar:
+static String BASE_URL = "api/books"; -> essa é a rota do nosso resource.
+
+como estamos  usando o MockMvc para mockar(simular) requisições, temos que fazer a injeção de dependencias dele.
+
+@ExtendWith(SpringExtension.class)
+@WebMockMvc
+@ActiveProfiles("test")
+@AutoConfigureMockMvc
+public class bookControllerTest {
+
+    static String BASE_URL = "api/books";
+
+    @AutoWired -> faz a injeção de dependencia.
+    MockMvc mvc;
+
+    @Test -> antes de qualquer metodo deve ser colocado essa annotation que representa um teste.
+    @DisplayName("Deve criar um livro") -> esta annotation serve para ser exibida no console a descrição do nosso método de teste;
+    public void createBook() throws Exception { // pode retornar uma exception devido ao writeValuesAsString
+        // Primeiramente devemos construir o corpo da requisição que iremos enviar, que no caso é POST
+        String json = new ObjectMapper().writeValuesAsString(objeto a ser serializado); // transforma objeto em json
+
+        //Segundo, nós devemos criar nossa requisição(request)
+        MockHttpServletRequestBuilder request = MockMvcHttpRequestBuilders.post(BASE_URL)
+            .contentType(MediaType.APPLICATION_JSON) // Adiciona o contentType como APPLICATION/json
+            .accept(MediaType.APPLICATION_JSON) // Aceita o contentType como application_json
+            .content(json) // envia nosso json como corpo da requisição.
+
+            /*  A request será enviada da seguinte forma
+            *   {
+            *       "title": "My Book",
+            *       "author": "Jon Doe",
+            *       "isbn" : "12345"
+            *   }
+            */
+            mvc.perform(request) //executa nossa requisição para o servidor
+                .andExpect(MockMvcResultMatchers.jsonPath("id").isNotEmpty) // o teste passará se o id não estiver vazio 
+                .andExpect(MockMvcResultMatchers.jsonPath("title").value("My Book")) // O Teste passará se na response o titulo estiver com o valor "My Book"
+                .andExpect(MockMvcResultMatchers.jsonPath("author").value("Jon Doe)) // O Teste passará se o valor retornado para o campo author for Jhon Doe
+    }
+
+}
