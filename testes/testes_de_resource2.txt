@@ -1,0 +1,43 @@
+
+@ExtendWith(SpringExtension.class)
+@WebMvcTest
+@ActiveProfiles("test")
+@AutoConfigureMockMvc
+public class BookControllerTests {
+    static String BASE_URL = "/api/books";
+
+    @Autowired
+    MockMvc mvc;
+
+    @MockBean
+    IBookService service;
+
+    @Test
+    @DisplayName("Deve Criar um livro")
+    void createBook() throws Exception {
+        BookDTO dto = BookDTO.builder().id(10L).author("Jon Doe").isbn("12345").title("My book").build();
+        Book savedBook = Book.builder().id(dto.getId()).author(dto.getAuthor()) // Passa o DTO para uma instancia de BOOK
+                .isbn(dto.getIsbn()).title(dto.getTitle()).build();
+
+
+        String json = new ObjectMapper().writeValueAsString(dto);
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post(BASE_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(json);
+
+        BDDMockito.given(service.save(Mockito.any(Book.class))).willReturn(savedBook); // Mocka o retorno do Service como savedBook
+
+        mvc.perform(request)
+                .andExpect(MockMvcResultMatchers.jsonPath("id").value(dto.getId()))
+                .andExpect(MockMvcResultMatchers.jsonPath("title").value(dto.getTitle()))
+                .andExpect(MockMvcResultMatchers.jsonPath("author").value(dto.getAuthor()));
+    }
+    
+    @Test
+    @DisplayName("Deve Dar erro ao cadastrar um livro com dados insuficientes")
+    void createBookException() {
+
+    }
+}

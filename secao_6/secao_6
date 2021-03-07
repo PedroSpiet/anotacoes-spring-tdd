@@ -1,0 +1,9 @@
+Agora iremos adicionar uma interface de service e iremos utilizá-la para fazer nossos testes.
+
+iremos criar um atributo chamado service que será do tipo IBookService que é a nossa interface.
+
+@MockBean
+IBookService service;
+
+//MockBean ele é um mock especializado que é utilizado pelo spring para criar a instancia mocada de uma classe e colocar dentro de um contexto de injeção de dependencia que foi trazido para nos atraves do @ExtendWit
+
